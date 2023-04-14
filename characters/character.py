@@ -63,6 +63,7 @@ class CharacterParser:
             return ""
 
     def get_about(self):
+        # Need to change the code
         try:
             text = self.parser.css_first("#content > table tr > td:nth-child(2)").text()
             return re.search(r"<br><br(.*?)<br><br>", text)[0].strip("<br><br>")
