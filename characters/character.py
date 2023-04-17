@@ -63,10 +63,12 @@ class CharacterParser:
             return ""
 
     def get_about(self):
-        # Need to change the code
         try:
-            text = self.parser.css_first("#content > table tr > td:nth-child(2)").text()
-            return re.search(r"<br><br(.*?)<br><br>", text)[0].strip("<br><br>")
+            td = self.parser.css_first("#content table tbody tr > td:nth-of-type(2)")
+            tags = ["div", "br", "table", "h2"]
+            td.strip_tags(tags)
+            sentences = td.text().split("\n")
+            return "\n\n".join(s for s in sentences if len(s) >= 50).strip()
         except Exception:
             return ""
 

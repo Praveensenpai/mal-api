@@ -2,7 +2,6 @@ from itertools import count
 import time
 import xmltodict
 from character import insert_character, CharacterParser, exist_character
-import asyncio
 import httpx
 from rich import print
 
@@ -10,7 +9,8 @@ counter = count(1)
 exist_counter = count(1)
 REQUEST_LIMIT = 10
 TIMEOUT = 60
-headers = {
+
+HEADERS = {
     "authority": "myanimelist.net",
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.7",
     "accept-language": "en",
@@ -44,7 +44,7 @@ async def get_request(url: str, *args, **kwargs):
 
 async def get_characters_pages():
     character_url1 = "https://myanimelist.net/sitemap/character-000.xml"
-    resp = await get_request(character_url1, headers=headers)
+    resp = await get_request(character_url1, headers=HEADERS)
     doc = xmltodict.parse(resp.text)
     urls = list({key["loc"] for key in doc["urlset"]["url"]})
     print(f"TOTAL URLS: {len(urls)}")
@@ -57,22 +57,10 @@ async def process_character(url: str):
         if exist_character(url):
             print("Exist Count:", next(exist_counter), url)
             return
-        resp = await get_request(url, headers=headers)
+        resp = await get_request(url, headers=HEADERS)
         character_parser = CharacterParser(resp.text)
         character = character_parser.get_character()
         insert_character(character)
     except Exception as e:
         print("Failed", url)
         print(e)
-
-
-async def main():
-    tasks = []
-    async for urls in get_characters_pages():
-        tasks.extend(asyncio.create_task(process_character(url)) for url in urls)
-        results = await asyncio.gather(*tasks)
-        print(f"Processed {len(results)} characters")
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
