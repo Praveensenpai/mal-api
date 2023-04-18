@@ -68,7 +68,8 @@ class CharacterParser:
             tags = ["div", "br", "table", "h2"]
             td.strip_tags(tags)
             sentences = td.text().split("\n")
-            return "\n\n".join(s for s in sentences if len(s) >= 50).strip()
+            return "\n\n".join(sentences).strip()
+            # return "\n\n".join(s for s in sentences if len(s) >= 50).strip()
         except Exception:
             return ""
 
