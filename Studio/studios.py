@@ -14,7 +14,7 @@ def get_parser(url: str) -> HTMLParser:
 def get_studio_pages():
     parser = get_parser("https://myanimelist.net/anime/producer")
     return (
-        a.attributes["href"]
+        f'https://myanimelist.net{a.attributes["href"]}'
         for a in parser.css("a.genre-name-link")
         if "/producer/" in a.attributes["href"]
     )
