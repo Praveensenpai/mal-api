@@ -61,6 +61,7 @@ class PersonParser:
         date_str = self.soup.find("span", string="Birthday:").next_sibling.strip(" ")
         return datestring_to_datetime(date_str)
 
+    @exception_handler
     def get_person(self) -> Person:
         return Person(
             mal_id=self.get_person_id(),
