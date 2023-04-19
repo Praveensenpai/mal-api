@@ -1,5 +1,6 @@
 from enum import Enum
 from sqlmodel import SQLModel, create_engine, Session, Field
+from utility.utility import exception_handler
 
 
 class GenreType(Enum):
@@ -31,26 +32,22 @@ engine = create_engine(sqlite_url)
 SQLModel.metadata.create_all(engine)
 
 
+@exception_handler
 def basic_genre_insert(basic_genre: BasicGenre):
-    try:
-        with Session(engine) as session:
-            session.add(basic_genre)
-            session.commit()
-            session.refresh(basic_genre)
-            print("Inserted genre", basic_genre.name)
-    except Exception as e:
-        print(e)
+    with Session(engine) as session:
+        session.add(basic_genre)
+        session.commit()
+        session.refresh(basic_genre)
+        print("Inserted genre", basic_genre.name)
 
 
+@exception_handler
 def genre_insert(genre: Genre):
-    try:
-        with Session(engine) as session:
-            session.add(genre)
-            session.commit()
-            session.refresh(genre)
-            print("Inserted genre", genre.name)
-    except Exception as e:
-        print(e)
+    with Session(engine) as session:
+        session.add(genre)
+        session.commit()
+        session.refresh(genre)
+        print("Inserted genre", genre.name)
 
 
 def fetch_basic_genre(genre: Genre):

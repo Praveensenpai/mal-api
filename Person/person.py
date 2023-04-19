@@ -7,6 +7,8 @@ from models import Person, get_peoplelinks, get_person_by_url, insert_person
 import httpx
 from itertools import count
 from rich import print
+from utility.utility import exception_handler
+
 
 COUNTER = count()
 SLEEP_TIME = 60
@@ -20,72 +22,56 @@ class PersonParser:
     def __init__(self, html: str):
         self.soup = BeautifulSoup(html, "html.parser")
 
-    def getPersonId(self) -> int:
-        return self.getPersonURL().split("/")[-2]
+    def get_person_id(self) -> int:
+        return self.get_person_url().split("/")[-2]
 
-    def getPersonURL(self) -> str:
+    def get_person_url(self) -> str:
         return self.soup.find("meta", property="og:url")["content"].strip()
 
-    def getPersonName(self) -> str:
+    def get_person_name(self) -> str:
         return self.soup.find("meta", property="og:title")["content"].strip()
 
-    def getPersonImageUrl(self) -> str:
-        try:
-            return self.soup.find("meta", property="og:image")["content"]
-        except Exception:
-            return ""
+    @exception_handler
+    def get_person_image(self) -> str:
+        return self.soup.find("meta", property="og:image")["content"]
 
-    def getPersonGivenName(self) -> Optional[str]:
-        try:
-            return self.soup.find("span", string="Given name:").nextSibling
-        except Exception:
-            return ""
+    @exception_handler
+    def get_person_given_name(self) -> Optional[str]:
+        return self.soup.find("span", string="Given name:").nextSibling
 
-    def getPersonFamilyName(self):
-        try:
-            return self.soup.find("span", string="Family name:").nextSibling
-        except Exception:
-            return ""
+    @exception_handler
+    def get_person_family_name(self):
+        return self.soup.find("span", string="Family name:").nextSibling
 
-    def getPersonAlternateNames(self) -> List[str]:
-        try:
-            node: list[str] = self.soup.find(
-                "span", string="Alternate names:"
-            ).nextSibling.split(",")
-            return [name.strip() for name in node]
-        except Exception:
-            return []
+    @exception_handler([])
+    def get_person_alterate_names(self) -> List[str]:
+        node: list[str] = self.soup.find(
+            "span", string="Alternate names:"
+        ).nextSibling.split(",")
+        return [name.strip() for name in node]
 
-    def getPersonWebsite(self) -> Optional[str]:
-        try:
-            return (
-                self.soup.find("span", string="Website:")
-                .find_next_sibling("a")
-                .get("href")
-            )
-        except Exception:
-            return []
+    @exception_handler([])
+    def get_person_website(self) -> Optional[str]:
+        return (
+            self.soup.find("span", string="Website:").find_next_sibling("a").get("href")
+        )
 
-    def getPersonBirthday(self) -> Optional[datetime]:
-        try:
-            date_str = self.soup.find("span", string="Birthday:").next_sibling.strip(
-                " "
-            )
-            return datestring_to_datetime(date_str)
-        except Exception:
-            return []
+    @exception_handler([])
+    def get_dob(self) -> Optional[datetime]:
+        date_str = self.soup.find("span", string="Birthday:").next_sibling.strip(" ")
+        return datestring_to_datetime(date_str)
 
     def get_person(self) -> Person:
         return Person(
-            mal_id=self.getPersonId(),
-            name=self.getPersonName(),
-            url=self.getPersonURL(),
-            given_name=self.getPersonGivenName(),
-            family_name=self.getPersonFamilyName(),
-            alternate_names=self.getPersonAlternateNames(),
-            website=self.getPersonWebsite(),
-            birthday=self.getPersonBirthday(),
-            image_url=self.getPersonImageUrl(),
+            mal_id=self.get_person_id(),
+            name=self.get_person_name(),
+            url=self.get_person_url(),
+            given_name=self.get_person_given_name(),
+            family_name=self.get_person_family_name(),
+            alternate_names=self.get_person_alterate_names(),
+            website=self.get_person_website(),
+            birthday=self.get_dob(),
+            image_url=self.get_person_image(),
         )
 
 

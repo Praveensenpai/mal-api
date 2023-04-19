@@ -3,6 +3,7 @@ from selectolax.parser import HTMLParser
 from typing import List
 from sqlmodel import JSON, Column, SQLModel, Session, Field, create_engine, select
 from rich import print
+from utility.utility import exception_handler
 
 sqlite_url = "sqlite:///characters.db"
 engine = create_engine(sqlite_url, echo=False)
@@ -54,89 +55,66 @@ class CharacterParser:
     def get_title(self):
         return self.parser.css_first("meta[property='og:title']").attributes["content"]
 
+    @exception_handler
     def get_kanji_title(self):
-        try:
-            return (
-                self.parser.css_first("h2.normal_header span small").text().strip("()")
-            )
-        except Exception:
-            return ""
+        return self.parser.css_first("h2.normal_header span small").text().strip("()")
 
+    @exception_handler
     def get_about(self):
-        try:
-            td = self.parser.css_first("#content table tbody tr > td:nth-of-type(2)")
-            tags = ["div", "br", "table", "h2"]
-            td.strip_tags(tags)
-            sentences = td.text().split("\n")
-            return "\n\n".join(sentences).strip()
-            # return "\n\n".join(s for s in sentences if len(s) >= 50).strip()
-        except Exception:
-            return ""
+        td = self.parser.css_first("#content table tbody tr > td:nth-of-type(2)")
+        tags = ["div", "br", "table", "h2"]
+        td.strip_tags(tags)
+        sentences = td.text().split("\n")
+        return "\n\n".join(sentences).strip()
+        # return "\n\n".join(s for s in sentences if len(s) >= 50).strip()
 
+    @exception_handler([])
     def get_nicknames(self):
-        try:
-            aliases = self.parser.css_first("h1").text().strip()
-            aliases = aliases[aliases.find('"') + 1 : aliases.rfind('"')].strip()
-            return aliases.split(", ")
-        except Exception:
-            return []
+        aliases = self.parser.css_first("h1").text().strip()
+        aliases = aliases[aliases.find('"') + 1 : aliases.rfind('"')].strip()
+        return aliases.split(", ")
 
+    @exception_handler
     def get_member_favorites_count(self):
-        try:
-            pattern = r"Member Favorites: (\d+,?\d+)"
-            match = re.search(pattern, self.html)
-            return re.search(r"\d+,?\d+", match[0])[0].replace(",", "")
-        except Exception:
-            return None
+        pattern = r"Member Favorites: (\d+,?\d+)"
+        match = re.search(pattern, self.html)
+        return re.search(r"\d+,?\d+", match[0])[0].replace(",", "")
 
+    @exception_handler
     def get_image(self):
-        try:
-            return self.parser.css_first("meta[property='og:image']").attributes[
-                "content"
-            ]
-        except Exception:
-            return ""
+        return self.parser.css_first("meta[property='og:image']").attributes["content"]
 
+    @exception_handler([])
     def get_animeography(self):
-        try:
-            anime_links = {
-                link
-                for link in self.parser.css("td.borderClass tr a")
-                if "/anime/" in link.attributes.get("href", "")
-            }
+        anime_links = {
+            link
+            for link in self.parser.css("td.borderClass tr a")
+            if "/anime/" in link.attributes.get("href", "")
+        }
 
-            return list(
-                {self.parse_malid(link.attributes["href"]) for link in anime_links}
-            )
-        except Exception:
-            return []
+        return list({self.parse_malid(link.attributes["href"]) for link in anime_links})
 
+    @exception_handler([])
     def get_mangagraphy(self):
-        try:
-            manga_links = [
-                link
-                for link in self.parser.css("td.borderClass tr a")
-                if "/manga/" in link.attributes.get("href", "")
-            ]
-            return list(
-                {self.parse_malid(link.attributes["href"]) for link in manga_links}
-            )
-        except Exception:
-            return []
+        manga_links = [
+            link
+            for link in self.parser.css("td.borderClass tr a")
+            if "/manga/" in link.attributes.get("href", "")
+        ]
+        return list({self.parse_malid(link.attributes["href"]) for link in manga_links})
 
+    @exception_handler([])
     def get_voice_actors(self) -> List[dict]:
-        try:
-            return [
-                {
-                    "language": td.css_first("small").text(),
-                    "mal_id": self.parse_malid(td.css_first("a").attributes["href"]),
-                }
-                for td in self.parser.css("table > tbody > tr > td:nth-child(2)")
-                if "/people/" in td.css_first("a").attributes["href"]
-            ]
-        except Exception:
-            return []
+        return [
+            {
+                "language": td.css_first("small").text(),
+                "mal_id": self.parse_malid(td.css_first("a").attributes["href"]),
+            }
+            for td in self.parser.css("table > tbody > tr > td:nth-child(2)")
+            if "/people/" in td.css_first("a").attributes["href"]
+        ]
 
+    @exception_handler
     def get_character(self):
         return Character(
             url=self.get_character_url(),

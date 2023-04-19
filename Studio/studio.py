@@ -2,6 +2,7 @@ import re
 from cache_request import cache_request
 from selectolax.parser import HTMLParser
 from models import Studio
+from utility.utility import exception_handler
 
 
 def get_request(url):
@@ -22,75 +23,58 @@ class StudioParser:
     def get_malid(self):
         return int(self.get_url().split("/")[-2])
 
+    @exception_handler([])
     def get_alternate_titles(self):
-        try:
-            english_titles = [
-                h1.text().strip()
-                for h1 in self.parser.css("#contentWrapper > div:first-child > h1")
-            ]
-            japanese_titles = (
-                re.search(r"Japanese:.*", self.text)[0]
-                .replace("Japanese: ", "")
-                .strip()
-            )
-            return [*english_titles, japanese_titles]
-        except Exception:
-            return []
+        english_titles = [
+            h1.text().strip()
+            for h1 in self.parser.css("#contentWrapper > div:first-child > h1")
+        ]
+        japanese_titles = (
+            re.search(r"Japanese:.*", self.text)[0].replace("Japanese: ", "").strip()
+        )
+        return [*english_titles, japanese_titles]
 
+    @exception_handler
     def get_established(self):
-        try:
-            return (
-                re.search(r"Established:.*", self.text)[0]
-                .replace("Established:", "")
-                .strip()
-            )
-        except Exception:
-            return ""
+        return (
+            re.search(r"Established:.*", self.text)[0]
+            .replace("Established:", "")
+            .strip()
+        )
 
+    @exception_handler
     def get_favorites(self):
-        try:
-            return (
-                re.search(r"Member Favorites: .*", self.text)[0]
-                .replace("Member Favorites: ", "")
-                .strip()
-            ).replace(",", "")
-        except Exception:
-            return None
+        return (
+            re.search(r"Member Favorites: .*", self.text)[0]
+            .replace("Member Favorites: ", "")
+            .strip()
+        ).replace(",", "")
 
+    @exception_handler
     def get_animecount(self):
-        try:
-            li_text = self.parser.css_first("#content ul.btn-type li").text()
-            return re.search(r"\d+", li_text)[0]
-        except Exception:
-            return None
+        li_text = self.parser.css_first("#content ul.btn-type li").text()
+        return re.search(r"\d+", li_text)[0]
 
+    @exception_handler([])
     def get_external_links(self):
-        try:
-            return [
-                a.attributes["href"]
-                for a in self.parser.css(
-                    "#content > div:nth-of-type(1) > div.user-profile-sns > span a"
-                )
-            ]
-        except Exception:
-            return []
+        return [
+            a.attributes["href"]
+            for a in self.parser.css(
+                "#content > div:nth-of-type(1) > div.user-profile-sns > span a"
+            )
+        ]
 
+    @exception_handler
     def get_image(self):
-        try:
-            return self.parser.css_first('meta[property="og:image"]').attributes[
-                "content"
-            ]
-        except Exception:
-            return ""
+        return self.parser.css_first('meta[property="og:image"]').attributes["content"]
 
+    @exception_handler
     def get_about(self):
-        try:
-            return self.parser.css_first(
-                "#content > div:nth-of-type(1) div.spaceit_pad > span:not(.dark_text)"
-            ).text()
-        except Exception:
-            return ""
+        return self.parser.css_first(
+            "#content > div:nth-of-type(1) div.spaceit_pad > span:not(.dark_text)"
+        ).text()
 
+    @exception_handler
     def get_studio(self) -> Studio:
         return Studio(
             malid=self.get_malid(),
