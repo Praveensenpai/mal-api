@@ -32,7 +32,7 @@ class AnimeGenreParser:
     def get_genre(self) -> list[Genre]:
         mal_id = self.get_mal_id()
         if mal_id is None:
-            return []
+            return
 
         return Genre(
             mal_id=mal_id,
