@@ -2,7 +2,6 @@ import asyncio
 import time
 from typing import List, Optional
 from datetime import datetime
-from bs4 import BeautifulSoup
 from models import Person, get_peoplelinks, get_person_by_url, insert_person
 import httpx
 from itertools import count
@@ -17,7 +16,6 @@ SLEEP_TIME = 60
 
 class PersonParser:
     def __init__(self, html: str):
-        self.soup = BeautifulSoup(html, "html.parser")
         self.parser = HTMLParser(html)
         self.text = self.parser.text()
 
