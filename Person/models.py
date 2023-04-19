@@ -1,7 +1,6 @@
 from typing import List, Optional
 from sqlmodel import Field, SQLModel, Session, create_engine, JSON, Column
 from rich import print
-from datetime import datetime
 
 
 class PeopleLink(SQLModel, table=True):
