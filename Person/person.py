@@ -7,15 +7,13 @@ from models import Person, get_peoplelinks, get_person_by_url, insert_person
 import httpx
 from itertools import count
 from rich import print
-from utility.utility import exception_handler
+
+# from utility.utility import exception_handler
+from utility import exception_handler
 
 
 COUNTER = count()
 SLEEP_TIME = 60
-
-
-def datestring_to_datetime(date_str: str) -> datetime:
-    return datetime.strptime(date_str, "%B %d, %Y")
 
 
 class PersonParser:
@@ -31,15 +29,15 @@ class PersonParser:
     def get_person_name(self) -> str:
         return self.soup.find("meta", property="og:title")["content"].strip()
 
-    @exception_handler
+    @exception_handler()
     def get_person_image(self) -> str:
         return self.soup.find("meta", property="og:image")["content"]
 
-    @exception_handler
+    @exception_handler()
     def get_person_given_name(self) -> Optional[str]:
         return self.soup.find("span", string="Given name:").nextSibling
 
-    @exception_handler
+    @exception_handler()
     def get_person_family_name(self):
         return self.soup.find("span", string="Family name:").nextSibling
 
@@ -58,10 +56,8 @@ class PersonParser:
 
     @exception_handler([])
     def get_dob(self) -> Optional[datetime]:
-        date_str = self.soup.find("span", string="Birthday:").next_sibling.strip(" ")
-        return datestring_to_datetime(date_str)
+        return self.soup.find("span", string="Birthday:").next_sibling.strip(" ")
 
-    @exception_handler
     def get_person(self) -> Person:
         return Person(
             mal_id=self.get_person_id(),

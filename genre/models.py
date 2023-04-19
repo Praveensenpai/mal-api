@@ -32,7 +32,7 @@ engine = create_engine(sqlite_url)
 SQLModel.metadata.create_all(engine)
 
 
-@exception_handler
+@exception_handler()
 def basic_genre_insert(basic_genre: BasicGenre):
     with Session(engine) as session:
         session.add(basic_genre)
@@ -41,7 +41,7 @@ def basic_genre_insert(basic_genre: BasicGenre):
         print("Inserted genre", basic_genre.name)
 
 
-@exception_handler
+@exception_handler()
 def genre_insert(genre: Genre):
     with Session(engine) as session:
         session.add(genre)

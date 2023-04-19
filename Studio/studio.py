@@ -34,7 +34,7 @@ class StudioParser:
         )
         return [*english_titles, japanese_titles]
 
-    @exception_handler
+    @exception_handler()
     def get_established(self):
         return (
             re.search(r"Established:.*", self.text)[0]
@@ -42,7 +42,7 @@ class StudioParser:
             .strip()
         )
 
-    @exception_handler
+    @exception_handler()
     def get_favorites(self):
         return (
             re.search(r"Member Favorites: .*", self.text)[0]
@@ -50,7 +50,7 @@ class StudioParser:
             .strip()
         ).replace(",", "")
 
-    @exception_handler
+    @exception_handler()
     def get_animecount(self):
         li_text = self.parser.css_first("#content ul.btn-type li").text()
         return re.search(r"\d+", li_text)[0]
@@ -64,17 +64,17 @@ class StudioParser:
             )
         ]
 
-    @exception_handler
+    @exception_handler()
     def get_image(self):
         return self.parser.css_first('meta[property="og:image"]').attributes["content"]
 
-    @exception_handler
+    @exception_handler()
     def get_about(self):
         return self.parser.css_first(
             "#content > div:nth-of-type(1) div.spaceit_pad > span:not(.dark_text)"
         ).text()
 
-    @exception_handler
+    @exception_handler()
     def get_studio(self) -> Studio:
         return Studio(
             malid=self.get_malid(),

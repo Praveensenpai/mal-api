@@ -55,11 +55,11 @@ class CharacterParser:
     def get_title(self):
         return self.parser.css_first("meta[property='og:title']").attributes["content"]
 
-    @exception_handler
+    @exception_handler()
     def get_kanji_title(self):
         return self.parser.css_first("h2.normal_header span small").text().strip("()")
 
-    @exception_handler
+    @exception_handler()
     def get_about(self):
         td = self.parser.css_first("#content table tbody tr > td:nth-of-type(2)")
         tags = ["div", "br", "table", "h2"]
@@ -74,13 +74,13 @@ class CharacterParser:
         aliases = aliases[aliases.find('"') + 1 : aliases.rfind('"')].strip()
         return aliases.split(", ")
 
-    @exception_handler
+    @exception_handler()
     def get_member_favorites_count(self):
         pattern = r"Member Favorites: (\d+,?\d+)"
         match = re.search(pattern, self.html)
         return re.search(r"\d+,?\d+", match[0])[0].replace(",", "")
 
-    @exception_handler
+    @exception_handler()
     def get_image(self):
         return self.parser.css_first("meta[property='og:image']").attributes["content"]
 

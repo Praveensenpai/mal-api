@@ -18,7 +18,7 @@ class Person(SQLModel, table=True):
         nullable=True, sa_column=Column("alternate_names", JSON)
     )
     website: str = Field(nullable=True)
-    birthday: datetime = Field(nullable=True)
+    birthday: str = Field(nullable=True)
     image_url: str = Field(nullable=True)
 
 
