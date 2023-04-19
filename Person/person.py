@@ -7,9 +7,8 @@ from models import Person, get_peoplelinks, get_person_by_url, insert_person
 import httpx
 from itertools import count
 from rich import print
-
-# from utility.utility import exception_handler
-from utility import exception_handler
+from selectolax.parser import HTMLParser
+from utility.utility import exception_handler
 
 
 COUNTER = count()
@@ -19,44 +18,77 @@ SLEEP_TIME = 60
 class PersonParser:
     def __init__(self, html: str):
         self.soup = BeautifulSoup(html, "html.parser")
+        self.parser = HTMLParser(html)
+        self.text = self.parser.text()
 
     def get_person_id(self) -> int:
         return self.get_person_url().split("/")[-2]
 
     def get_person_url(self) -> str:
-        return self.soup.find("meta", property="og:url")["content"].strip()
+        return (
+            self.parser.css_first('meta[property="og:url"]')
+            .attributes["content"]
+            .strip()
+        )
 
     def get_person_name(self) -> str:
-        return self.soup.find("meta", property="og:title")["content"].strip()
+        return (
+            self.parser.css_first('meta[property="og:title"]')
+            .attributes["content"]
+            .strip()
+        )
 
     @exception_handler()
     def get_person_image(self) -> str:
-        return self.soup.find("meta", property="og:image")["content"]
+        return (
+            self.parser.css_first('meta[property="og:image"]')
+            .attributes["content"]
+            .strip()
+        )
 
     @exception_handler()
     def get_person_given_name(self) -> Optional[str]:
-        return self.soup.find("span", string="Given name:").nextSibling
+        return (
+            self.parser.select("span")
+            .text_contains("Given name:")
+            .matches[0]
+            .next.text()
+        )
 
     @exception_handler()
     def get_person_family_name(self):
-        return self.soup.find("span", string="Family name:").nextSibling
+        return (
+            self.parser.select("span")
+            .text_contains("Family name:")
+            .matches[0]
+            .next.text()
+        )
 
     @exception_handler([])
     def get_person_alterate_names(self) -> List[str]:
-        node: list[str] = self.soup.find(
-            "span", string="Alternate names:"
-        ).nextSibling.split(",")
+        node = (
+            self.parser.select("span")
+            .text_contains("Alternate names:")
+            .matches[0]
+            .next.text()
+        ).split(",")
+
         return [name.strip() for name in node]
 
     @exception_handler([])
     def get_person_website(self) -> Optional[str]:
         return (
-            self.soup.find("span", string="Website:").find_next_sibling("a").get("href")
+            self.parser.select("span")
+            .text_contains("Website:")
+            .matches[0]
+            .next.next.attributes["href"]
         )
 
     @exception_handler([])
     def get_dob(self) -> Optional[datetime]:
-        return self.soup.find("span", string="Birthday:").next_sibling.strip(" ")
+        return (
+            self.parser.select("span").text_contains("Birthday:").matches[0].next.text()
+        )
 
     def get_person(self) -> Person:
         return Person(
